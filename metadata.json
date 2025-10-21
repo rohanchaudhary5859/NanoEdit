@@ -1,0 +1,7 @@
+{
+  "name": "NanoEdit",
+  "description": "An AI-powered image editing website that allows users to upload and edit images through simple natural language text or voice commands using the Gemini model.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

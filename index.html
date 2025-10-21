@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NanoEdit - AI Image Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/react-image-crop/dist/ReactCrop.css" />
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              'sans': ['Roboto', 'sans-serif'],
+              'display': ['Orbitron', 'sans-serif'],
+            },
+            colors: {
+              'primary': '#00f6ff',
+              'secondary': '#ff00c1',
+              'dark-bg': '#0a0a1a',
+              'dark-bg-secondary': '#161625',
+              'light-bg': '#f0f2f5',
+            },
+            keyframes: {
+              'gradient-spin': {
+                '0%, 100%': { 'background-position': '0% 50%' },
+                '50%': { 'background-position': '100% 50%' },
+              },
+              'float': {
+                '0%, 100%': { transform: 'translateY(0px)' },
+                '50%': { transform: 'translateY(-20px)' },
+              },
+              'morph': {
+                '0%, 100%': { borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%', transform: 'rotate(0deg) scale(1)' },
+                '50%': { borderRadius: '30% 60% 70% 40% / 50% 60% 30% 60%', transform: 'rotate(180deg) scale(1.1)' },
+              },
+              'pulse-glow': {
+                '0%, 100%': { 'box-shadow': '0 0 15px rgba(0, 246, 255, 0.2), inset 0 0 15px rgba(0, 246, 255, 0.1)' },
+                '50%': { 'box-shadow': '0 0 30px rgba(0, 246, 255, 0.5), inset 0 0 30px rgba(0, 246, 255, 0.2)' },
+              },
+            },
+            animation: {
+              'gradient-spin': 'gradient-spin 15s ease infinite',
+              'float': 'float 6s ease-in-out infinite',
+              'morph': 'morph 4s ease-in-out infinite',
+              'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      .ReactCrop__rule-of-thirds-vt::after,
+      .ReactCrop__rule-of-thirds-vt::before,
+      .ReactCrop__rule-of-thirds-hz::after,
+      .ReactCrop__rule-of-thirds-hz::before {
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+      .ReactCrop__crop-selection {
+        border-color: rgba(0, 246, 255, 0.8);
+      }
+      .ReactCrop__drag-handle {
+        background-color: rgba(0, 246, 255, 0.8);
+        border-color: rgba(10, 10, 26, 0.8);
+        width: 10px;
+        height: 10px;
+        margin-top: -5px;
+        margin-left: -5px;
+      }
+      body, button, a {
+        cursor: none;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0",
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^12.23.24",
+    "react-image-crop": "https://aistudiocdn.com/react-image-crop@^11.0.9",
+    "browser-image-compression": "https://aistudiocdn.com/browser-image-compression@^2.0.2"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-light-bg dark:bg-dark-bg text-gray-800 dark:text-gray-200">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
