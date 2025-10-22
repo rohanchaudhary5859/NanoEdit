@@ -55,7 +55,7 @@ const Gallery: React.FC = () => {
                     transition={{ duration: 0.8 }}
                     className="text-center max-w-3xl mx-auto mb-16"
                 >
-                    <h2 className="font-display text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                    <h2 className="font-display text-4xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
                         Inspiration Gallery
                     </h2>
                     <p className="text-lg text-gray-600 dark:text-gray-300">

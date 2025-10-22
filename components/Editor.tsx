@@ -6,7 +6,7 @@ import { optimizeImage } from '../utils/imageOptimizer';
 import { ImageState } from '../types';
 import Loader from './Loader';
 import TutorialModal from './TutorialModal';
-import { CloseIcon, DownloadIcon, ImageIcon, MicrophoneIcon, RedoIcon, ResetIcon, ShareIcon, SliderIcon, UndoIcon, UploadIcon, SettingsIcon } from './icons';
+import { CloseIcon, DownloadIcon, ImageIcon, MicrophoneIcon, RedoIcon, ResetIcon, ShareIcon, SliderIcon, UndoIcon, UploadIcon, SettingsIcon, SparklesIcon } from './icons';
 
 // FIX: Add type definitions for the Web Speech API to resolve TypeScript errors.
 // These are not included by default as the API is experimental.
@@ -47,6 +47,45 @@ const SESSION_IMAGE_KEY = 'nanoedit-session-image';
 const SESSION_PROMPT_KEY = 'nanoedit-session-prompt';
 
 
+/**
+ * Applies filters to an image using a canvas and returns the new data URL.
+ * @param imageState The current state of the image (dataUrl and mimeType).
+ * @param brightness The brightness percentage (0-200).
+ * @param contrast The contrast percentage (0-200).
+ * @param saturation The saturation percentage (0-200).
+ * @returns A promise that resolves to the new data URL of the filtered image.
+ */
+const getFilteredDataUrl = (
+    imageState: ImageState,
+    brightness: number,
+    contrast: number,
+    saturation: number
+): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                return reject(new Error('Could not get canvas context'));
+            }
+
+            ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+            ctx.drawImage(img, 0, 0);
+
+            resolve(canvas.toDataURL(imageState.mimeType));
+        };
+        img.onerror = (err) => {
+            reject(new Error(`Failed to load image for filtering: ${err}`));
+        };
+        img.src = imageState.dataUrl;
+    });
+};
+
+
 const Editor: React.FC = () => {
     const { current, original, push, undo, redo, canUndo, canRedo, reset } = useImageHistory(null);
     const [prompt, setPrompt] = useState('');
@@ -63,6 +102,11 @@ const Editor: React.FC = () => {
     const [isControlsOpen, setIsControlsOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+    // Adjustment states
+    const [brightness, setBrightness] = useState(100);
+    const [contrast, setContrast] = useState(100);
+    const [saturation, setSaturation] = useState(100);
 
 
     // For Before/After slider
@@ -122,6 +166,7 @@ const Editor: React.FC = () => {
         setIsControlsOpen(false); // Close sidebar on submit
 
         try {
+            // AI edits should be based on the unfiltered image data
             const base64Image = current.dataUrl.split(',')[1];
             const newImageDataUrl = await editImageWithNanoBanana(base64Image, current.mimeType, promptText);
             
@@ -134,6 +179,10 @@ const Editor: React.FC = () => {
         } finally {
             setIsLoading(false);
             setLoadingMessage('');
+            // Reset adjustments for the new image
+            setBrightness(100);
+            setContrast(100);
+            setSaturation(100);
         }
     };
     
@@ -192,6 +241,9 @@ const Editor: React.FC = () => {
             setError(null);
             setSuggestions([]); // Clear old suggestions
             setPrompt(''); // Clear prompt for new image session
+            setBrightness(100); // Reset adjustments
+            setContrast(100);
+            setSaturation(100);
 
             // Clear storage explicitly for a clean slate with the new image
             localStorage.removeItem(SESSION_IMAGE_KEY);
@@ -268,21 +320,35 @@ const Editor: React.FC = () => {
         }
     };
     
-    const handleDownload = () => {
+    const handleDownload = async () => {
         if (!current) return;
-        const link = document.createElement('a');
-        link.href = current.dataUrl;
-        link.download = `edited-image-${Date.now()}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
+        setIsLoading(true);
+        setLoadingMessage('Applying adjustments...');
+        setError(null);
+        try {
+            const filteredDataUrl = await getFilteredDataUrl(current, brightness, contrast, saturation);
+            const link = document.createElement('a');
+            link.href = filteredDataUrl;
+            link.download = `nanoedit-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to apply adjustments for download.');
+        } finally {
+            setIsLoading(false);
+            setLoadingMessage('');
+        }
+    };
     
     const handleShare = async () => {
         if (!current) return;
+        setIsLoading(true);
+        setLoadingMessage('Preparing for share...');
         setError(null);
         try {
-            const response = await fetch(current.dataUrl);
+            const filteredDataUrl = await getFilteredDataUrl(current, brightness, contrast, saturation);
+            const response = await fetch(filteredDataUrl);
             const blob = await response.blob();
             const file = new File([blob], `nanoedit-${Date.now()}.png`, { type: current.mimeType });
             const shareData = {
@@ -303,6 +369,9 @@ const Editor: React.FC = () => {
             }
         } catch (err) {
              setError(err instanceof Error ? err.message : 'Could not share the image.');
+        } finally {
+            setIsLoading(false);
+            setLoadingMessage('');
         }
     };
 
@@ -321,6 +390,8 @@ const Editor: React.FC = () => {
             setIsGeneratingSuggestions(false);
         }
     }
+    
+    const imageStyle = { filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)` };
 
     const ControlsPanel = () => (
         <>
@@ -396,6 +467,35 @@ const Editor: React.FC = () => {
             {current && (
                 <>
                     <div className="mt-6 pt-6 border-t border-white/10">
+                        <div className="flex justify-between items-center mb-2">
+                            <h4 className="text-lg font-bold text-gray-800 dark:text-white">Adjustments</h4>
+                            <button
+                                type="button"
+                                onClick={() => { setBrightness(100); setContrast(100); setSaturation(100); }}
+                                className="flex items-center space-x-1 text-sm text-gray-500 hover:text-primary transition"
+                                title="Reset Adjustments"
+                            >
+                                <SparklesIcon className="w-4 h-4" />
+                                <span>Reset</span>
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <div>
+                                <label htmlFor="brightness" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Brightness: {brightness}%</label>
+                                <input id="brightness" type="range" min="0" max="200" value={brightness} onChange={(e) => setBrightness(Number(e.target.value))} />
+                            </div>
+                            <div>
+                                <label htmlFor="contrast" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contrast: {contrast}%</label>
+                                <input id="contrast" type="range" min="0" max="200" value={contrast} onChange={(e) => setContrast(Number(e.target.value))} />
+                            </div>
+                            <div>
+                                <label htmlFor="saturation" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Saturation: {saturation}%</label>
+                                <input id="saturation" type="range" min="0" max="200" value={saturation} onChange={(e) => setSaturation(Number(e.target.value))} />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="mt-6 pt-6 border-t border-white/10">
                         <h4 className="text-lg font-bold mb-3 text-gray-800 dark:text-white">AI Suggestions</h4>
                         <div className="min-h-[80px]">
                             {isGeneratingSuggestions && <div className="flex justify-center"><Loader/></div>}
@@ -431,9 +531,12 @@ const Editor: React.FC = () => {
                                 <button type="button" onClick={undo} disabled={!canUndo} className="p-2 bg-gray-500/20 rounded-md disabled:opacity-50 transition" title="Undo"><UndoIcon className="w-5 h-5" /></button>
                                 <button type="button" onClick={redo} disabled={!canRedo} className="p-2 bg-gray-500/20 rounded-md disabled:opacity-50 transition" title="Redo"><RedoIcon className="w-5 h-5" /></button>
                             </div>
-                            <button type="button" onClick={() => { original && reset(original) }} disabled={!canUndo} className="flex items-center space-x-1 text-sm text-gray-500 hover:text-primary disabled:opacity-50 transition" title="Reset Changes">
+                            <button 
+                                type="button"
+                                onClick={() => { if (original) { reset(original); setBrightness(100); setContrast(100); setSaturation(100); } }}
+                                disabled={!canUndo} className="flex items-center space-x-1 text-sm text-gray-500 hover:text-primary disabled:opacity-50 transition" title="Reset Changes">
                                 <ResetIcon className="w-4 h-4" />
-                                <span>Reset</span>
+                                <span>Reset All</span>
                             </button>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
@@ -481,7 +584,7 @@ const Editor: React.FC = () => {
                     className="max-w-5xl mx-auto"
                 >
                     <div className="text-center mb-12">
-                        <h2 className="font-display text-4xl font-bold text-gray-900 dark:text-white mb-4">The AI Creative Studio</h2>
+                        <h2 className="font-display text-4xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">The AI Creative Studio</h2>
                         <p className="text-lg text-gray-600 dark:text-gray-300">Bring your vision to life. Upload a photo, describe your edit, and let our Gemini-powered AI handle the rest.</p>
                         <button onClick={() => setIsTutorialOpen(true)} className="text-primary hover:underline mt-2">How does this work?</button>
                     </div>
@@ -584,7 +687,7 @@ const Editor: React.FC = () => {
                                         className="absolute inset-0"
                                         style={{ clipPath: clipPosition }}
                                     >
-                                        <img src={current.dataUrl} alt="Edited" draggable="false" className="w-full h-full object-contain" />
+                                        <img src={current.dataUrl} alt="Edited" draggable="false" className="w-full h-full object-contain" style={imageStyle} />
                                         <div className="absolute top-2 right-2 text-xs font-bold bg-black/50 text-white px-2 py-1 rounded">Edited</div>
                                     </motion.div>
                                     <motion.div
@@ -606,6 +709,7 @@ const Editor: React.FC = () => {
                                     src={current.dataUrl}
                                     alt="Current"
                                     className="max-w-full max-h-full object-contain rounded-lg"
+                                    style={imageStyle}
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.3 }}

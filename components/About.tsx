@@ -47,7 +47,7 @@ const About: React.FC = () => {
                     transition={{ duration: 0.8 }}
                     className="text-center max-w-3xl mx-auto"
                 >
-                    <h2 className="font-display text-4xl font-bold text-gray-900 dark:text-white mb-4">How It Works</h2>
+                    <h2 className="font-display text-4xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">How It Works</h2>
                     <p className="text-lg text-gray-600 dark:text-gray-300">
                         NanoEdit harnesses the power of Google's Gemini model to bring your creative visions to life. It's as simple as talking to your image.
                     </p>
