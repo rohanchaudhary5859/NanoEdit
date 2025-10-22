@@ -34,10 +34,5 @@ export const useImageHistory = (initialState: ImageState | null) => {
       setCurrentIndex(0);
     }, []);
 
-    const clear = useCallback(() => {
-        setHistory([]);
-        setCurrentIndex(-1);
-    }, []);
-
-    return { current, original, push, undo, redo, canUndo, canRedo, reset, clear };
+    return { current, original, push, undo, redo, canUndo, canRedo, reset };
 };

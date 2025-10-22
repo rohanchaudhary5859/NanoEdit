@@ -44,15 +44,15 @@ const CustomCursor: React.FC = () => {
     const variants = {
         default: {
             scale: 1,
-            backgroundColor: themeContext?.theme === 'dark' ? 'rgba(0, 246, 255, 0.8)' : 'rgba(255, 0, 193, 0.8)',
+            backgroundColor: themeContext?.theme === 'dark' ? 'rgba(99, 102, 241, 0.8)' : 'rgba(236, 72, 153, 0.8)',
         },
         hover: {
             scale: 2.5,
-            backgroundColor: themeContext?.theme === 'dark' ? 'rgba(0, 246, 255, 0.4)' : 'rgba(255, 0, 193, 0.4)',
+            backgroundColor: themeContext?.theme === 'dark' ? 'rgba(99, 102, 241, 0.4)' : 'rgba(236, 72, 153, 0.4)',
         }
     }
     
-    const trailColor = themeContext?.theme === 'dark' ? 'rgba(0, 246, 255, 0.2)' : 'rgba(255, 0, 193, 0.2)';
+    const trailColor = themeContext?.theme === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(236, 72, 153, 0.2)';
 
     return (
         <div className="hidden md:block pointer-events-none fixed inset-0 z-[9999]">

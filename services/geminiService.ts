@@ -55,25 +55,12 @@ export const editImageWithNanoBanana = async (
 
     } catch (error) {
         console.error("Error editing image with Gemini:", error);
-        
-        let userFriendlyError = "Failed to edit image due to an unexpected issue. Please try again later.";
-
-        if (error instanceof Error) {
-            const errorMessage = error.message.toLowerCase();
-            if (errorMessage.includes('api key not valid')) {
-                userFriendlyError = 'There is an issue with the API configuration. The provided API key is invalid.';
-            } else if (errorMessage.includes('safety')) {
-                userFriendlyError = 'Your request could not be processed due to safety policies. Please modify your prompt and try again.';
-            } else if (errorMessage.includes('no image data found')) {
-                userFriendlyError = "The AI couldn't generate an image for this request. Try rephrasing your prompt or using a different image.";
-            } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
-                userFriendlyError = "A network error occurred. Please check your internet connection and try again.";
-            } else {
-                userFriendlyError = error.message;
-            }
+        // Provide a more user-friendly error message
+        if (error instanceof Error && error.message.includes('API key not valid')) {
+            throw new Error('The API key is invalid. Please check your configuration.');
         }
-        
-        throw new Error(userFriendlyError);
+        // Re-throw the specific error from the try block or a generic one
+        throw error instanceof Error ? error : new Error("Failed to edit image. An unknown error occurred.");
     }
 };
 
@@ -126,24 +113,6 @@ export const getPromptSuggestions = async (
 
     } catch (error) {
         console.error("Error getting prompt suggestions:", error);
-        
-        let userFriendlyError = "Failed to generate AI suggestions. Please try again.";
-
-        if (error instanceof Error) {
-            const errorMessage = error.message.toLowerCase();
-            if (errorMessage.includes('api key not valid')) {
-                userFriendlyError = 'Could not get suggestions due to an API configuration issue.';
-            } else if (errorMessage.includes('safety')) {
-                userFriendlyError = 'Suggestions could not be generated for this image due to safety policies.';
-            } else if (errorMessage.includes('expected format')) {
-                userFriendlyError = "The AI returned an unexpected response for suggestions. Please try again.";
-            } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
-                userFriendlyError = "Network error while fetching suggestions. Please check your connection.";
-            } else if (error.message) {
-                userFriendlyError = error.message;
-            }
-        }
-    
-        throw new Error(userFriendlyError);
+        throw new Error("Failed to generate AI suggestions. Please try again.");
     }
 };

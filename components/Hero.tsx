@@ -21,7 +21,7 @@ const AnimatedShapes = () => {
             {shapes.map(shape => (
                  <motion.div
                     key={shape.id}
-                    className={`absolute rounded-full filter blur-3xl opacity-50 ${shape.size} ${shape.pos} ${shape.bg}`}
+                    className={`absolute rounded-full filter blur-4xl opacity-30 ${shape.size} ${shape.pos} ${shape.bg}`}
                     animate={{
                         x: [0, Math.random() * 100 - 50, 0],
                         y: [0, Math.random() * 100 - 50, 0],
@@ -53,11 +53,11 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
                 >
-                    <h1 className="font-display text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-4 tracking-wider">
-                        Transform Your Images with <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Text</span>.
+                    <h1 className="font-display text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
+                        Edit Images with <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">AI & Text</span>.
                     </h1>
                     <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-8">
-                        NanoBanana AI lets you edit and enhance images instantly with simple natural language commands.
+                        Unleash your creativity. NanoEdit lets you edit, enhance, and transform your photos instantly with simple text or voice commands. No complex software needed.
                     </p>
                     <div className="flex justify-center space-x-4">
                          <motion.button 
@@ -66,7 +66,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                          >
-                            Try Editor
+                            Start Editing
                          </motion.button>
                          <motion.button 
                             onClick={() => onNavigate('editor')}
